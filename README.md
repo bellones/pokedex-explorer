@@ -34,7 +34,7 @@ A React Native mobile application built with Expo that allows users to browse an
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/pokedex-explorer.git
+   git clone https://github.com/bellones/pokedex-explorer.git
    cd pokedex-explorer
    ```
 
