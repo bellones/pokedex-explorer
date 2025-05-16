@@ -1,77 +1,30 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PokemonGrid from '../src/components/PokemonGrid';
 
 import { ErrorDisplay, LoadingIndicator, SearchBar } from '@/components/UiComponents';
-import { Pokemon } from '../src/features/pokemon/types';
-import { useGetPokemonListQuery, useLazySearchPokemonQuery } from '../src/services/api/apiSlice';
+import useHomeScreen from '@/presentation/useHomeScreen';
 import { colors } from '../src/theme';
 
 export default function HomeScreen() {
-  const [offset, setOffset] = useState(0);
-  const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const isLoadingMore = useRef(false);
 
-  const { data, error, isLoading, isFetching, refetch } = useGetPokemonListQuery({
-    limit: 20,
-    offset,
-  });
 
-  const [searchPokemon, { data: searchData, isLoading: searchLoading }] = useLazySearchPokemonQuery();
-
-  useEffect(() => {
-    if (data && !searchQuery) {
-      if (offset === 0) {
-        setAllPokemon(data.results);
-      } else {
-        // Deduplicate by name to avoid repeat entries
-        setAllPokemon((prev) => {
-          const names = new Set(prev.map((p) => p.name));
-          const newUnique = data.results.filter((p) => !names.has(p.name));
-          return [...prev, ...newUnique];
-        });
-      }
-      isLoadingMore.current = false;
-    }
-  }, [data, offset, searchQuery]);
-
-  const handleLoadMore = useCallback(() => {
-    if (isLoading || isFetching || searchQuery || !data?.next || isLoadingMore.current) {
-      return;
-    }
-
-    isLoadingMore.current = true;
-
-    setOffset((prevOffset) => {
-      const newOffset = prevOffset + 20;
-      console.log('Loading more Pokemon, new offset:', newOffset);
-      return newOffset;
-    });
-  }, [isLoading, isFetching, searchQuery, data?.next]);
-
-  const handleSearch = useCallback(
-    (text: string) => {
-      setSearchQuery(text);
-      if (text.length >= 2) {
-        searchPokemon(text);
-      }
-    },
-    [searchPokemon]
-  );
-
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-  }, []);
-
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    setOffset(0);
-    refetch().finally(() => setIsRefreshing(false));
-  }, [refetch]);
-
+  const {
+     allPokemon,
+      searchQuery,
+      isLoading,
+      isFetching,
+      error,
+      searchLoading,
+      handleClearSearch,
+      handleLoadMore,
+      handleSearch,
+      searchData,
+      data,
+      refetch
+  } = useHomeScreen();
+ 
   if (isLoading && !data && !searchQuery) {
     return <LoadingIndicator />;
   }
